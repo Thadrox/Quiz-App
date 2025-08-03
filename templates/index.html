@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Royal Quiz</title>
+  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+  <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f8ff;
+      color: #333;
+    }
+    h1 {
+      color: #0066cc;
+    }
+    #question {
+      margin: 20px 0;
+      font-size: 20px;
+    }
+    button {
+      margin: 6px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Royal Quiz</h1>
+  <div id="question"></div>
+  <div id="answers"></div>
+  <div id="result"></div>
+
+  <py-script>
+from js import document
+from pyodide.ffi import create_proxy
+
+questions = [
+    {"question": "What is 2 + 2?", "answers": ["3", "4", "5"], "correct": "4"},
+    {"question": "Capital of France?", "answers": ["Berlin", "Paris", "London"], "correct": "Paris"},
+    {"question": "Which is a mammal?", "answers": ["Frog", "Lizard", "Whale"], "correct": "Whale"}
+]
+
+current_q = 0
+
+def show_question():
+    global current_q
+    if current_q >= len(questions):
+        document.getElementById("result").innerHTML = "🎉 Quiz Complete!"
+        document.getElementById("question").innerHTML = ""
+        document.getElementById("answers").innerHTML = ""
+        return
+
+    q = questions[current_q]
+    document.getElementById("question").innerHTML = f"<p>{q['question']}</p>"
+    answers_div = document.getElementById("answers")
+    answers_div.innerHTML = ""
+
+    for answer in q["answers"]:
+        def click_handler(event, a=answer):
+            global current_q
+            if a == questions[current_q]["correct"]:
+                document.getElementById("result").innerHTML = "✅ Correct!"
+            else:
+                document.getElementById("result").innerHTML = "❌ Wrong!"
+            current_q += 1
+            show_question()
+
+        click_proxy = create_proxy(click_handler)
+        button = document.createElement("button")
+        button.innerHTML = answer
+        button.addEventListener("click", click_proxy)
+        answers_div.appendChild(button)
+
+show_question()
+  </py-script>
+</body>
+</html>
